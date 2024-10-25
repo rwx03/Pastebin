@@ -3,10 +3,11 @@ package config
 import (
 	"flag"
 	"os"
-	"pastebin/pkg/logger"
+
 	"sync"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/rwx03/Pastebin/backend/pkg/logger"
 )
 
 type Config struct {
