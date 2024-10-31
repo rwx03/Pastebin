@@ -1,4 +1,8 @@
 import {
+  QueryClient,
+  QueryClientProvider
+} from '@tanstack/react-query';
+import {
   createBrowserRouter,
   Outlet,
   RouterProvider
@@ -6,7 +10,10 @@ import {
 import { Footer } from './components/footer/Footer';
 import { Header } from './components/header/Header';
 import { Home } from './views/Home';
+import { Login } from './views/Login';
 import { NotFound } from './views/NotFound';
+
+const queryClient = new QueryClient();
 
 const Layout = (): JSX.Element => {
   return (
@@ -32,13 +39,21 @@ const router = createBrowserRouter([
       {
         path: '/not-found',
         element: <NotFound />
+      },
+      {
+        path: '/auth/login',
+        element: <Login />
       }
     ]
   }
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  );
 }
 
 export default App;

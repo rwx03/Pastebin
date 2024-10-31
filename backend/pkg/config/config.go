@@ -11,21 +11,12 @@ import (
 )
 
 type Config struct {
-	TelegramToken string   `yaml:"telegram-token"`
-	Database      Database `yaml:"database"`
-	Chats         Chats    `yaml:"chats"`
-	Domains       Domains  `yaml:"domains"`
-	Server        Server   `yaml:"server"`
+	Database Database `yaml:"database"`
+	Server   Server   `yaml:"server"`
 }
 
 type Server struct {
 	Port int `yaml:"port"`
-}
-
-type Domains struct {
-	Wallapop struct {
-		ES string `yaml:"es"`
-	} `yaml:"wallapop"`
 }
 
 type Database struct {
@@ -34,11 +25,6 @@ type Database struct {
 	Username     string `yaml:"username" env-default:"postgres"`
 	Password     string `yaml:"password" env-default:"123123"`
 	DatabaseName string `yaml:"database_name" env-default:"attractive"`
-}
-
-type Chats struct {
-	Applications int64 `yaml:"applications"`
-	Logs         int64 `yaml:"logs"`
 }
 
 var (
