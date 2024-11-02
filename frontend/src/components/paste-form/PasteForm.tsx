@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { pasteService } from '../../services/paste.service';
@@ -13,15 +14,31 @@ interface IForm {
 export function PasteForm() {
   const { isAuth } = useAuth();
   const navigate = useNavigate();
+  const successNotify = (message: string) =>
+    toast.success(message, {
+      className: 'bg-[#141522] rounded-md text-white font-semibold'
+    });
+
+  const errorNotify = (message: string) =>
+    toast.error(message, {
+      className: 'bg-[#141522] rounded-md text-white font-semibold'
+    });
 
   const { register, handleSubmit, reset } = useForm<IForm>();
 
-  const { mutate, isError, isPending, isSuccess } = useMutation({
+  const { mutate } = useMutation({
     mutationKey: ['add paste'],
     mutationFn: async (newPaste: { title: string; content: string }) => {
       return pasteService.addPaste(newPaste.title, newPaste.content);
     },
-    onSuccess: () => reset()
+    onSuccess: () => {
+      successNotify('Paste successfully posted');
+      reset();
+    },
+    onError: () => {
+      errorNotify('Error occured when trying to upload your paste');
+      reset();
+    }
   });
 
   const onSubmit: SubmitHandler<IForm> = (data) => {
@@ -47,9 +64,6 @@ export function PasteForm() {
         {...register('message')}
       />
       <CreatePaste />
-      {isError && <span>ERROR</span>}
-      {isPending && <span>PENDING</span>}
-      {isSuccess && <span>SUCCESS</span>}
     </form>
   );
 }

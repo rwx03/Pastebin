@@ -17,9 +17,7 @@ type LoginInput struct {
 	Password string `json:"password"`
 }
 
-// func (h *Handler) login(c *gin.Context) {
-
-// }
+const refreshTokenTTL = 30 * 24 * 60 * 60 * 1000
 
 func (h *Handler) register(c *gin.Context) {
 	var input RegisterInput
@@ -36,7 +34,7 @@ func (h *Handler) register(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("refreshToken", refreshToken, 30*24*60*60*1000, "/", "", false, true)
+	c.SetCookie("refreshToken", refreshToken, refreshTokenTTL, "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"accessToken":  accessToken,
 		"refreshToken": refreshToken,
@@ -58,10 +56,31 @@ func (h *Handler) login(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("refreshToken", refreshToken, 30*24*60*60*1000, "/", "", false, true)
+	c.SetCookie("refreshToken", refreshToken, refreshTokenTTL, "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"accessToken":  accessToken,
 		"refreshToken": refreshToken,
 		"email":        input.Email,
+	})
+}
+
+func (h *Handler) refresh(c *gin.Context) {
+	token, err := c.Cookie("refreshToken")
+	if err != nil {
+		newErrorResponse(c, http.StatusUnauthorized, "no refresh token")
+		return
+	}
+
+	accessToken, refreshToken, email, err := h.services.Auth.Refresh(token)
+	if err != nil {
+		newErrorResponse(c, http.StatusUnauthorized, fmt.Sprintf("error: %v", err))
+		return
+	}
+
+	c.SetCookie("refreshToken", refreshToken, refreshTokenTTL, "/", "", false, true)
+	c.JSON(http.StatusOK, gin.H{
+		"accessToken":  accessToken,
+		"refreshToken": refreshToken,
+		"email":        email,
 	})
 }

@@ -31,14 +31,14 @@ func (p *PastePostgres) Create(ctx context.Context, paste models.Paste) (int, er
 }
 
 func (p *PastePostgres) GetPasteByID(ctx context.Context, id string) (*models.Paste, error) {
-	var paste *models.Paste
+	var paste models.Paste
 
-	query := fmt.Sprintf(`SELECT * FROM %s WHERE paste_id = $1`, usersTable)
+	query := fmt.Sprintf(`SELECT * FROM %s WHERE paste_id = $1`, pastesTable)
 	if err := pgxscan.Get(ctx, p.pool, &paste, query, id); err != nil {
 		return nil, err
 	}
 
-	return paste, nil
+	return &paste, nil
 }
 
 func (p *PastePostgres) GetAllPastes(ctx context.Context) ([]models.Paste, error) {

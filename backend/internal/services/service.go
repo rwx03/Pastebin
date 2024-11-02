@@ -15,7 +15,8 @@ type Paste interface {
 type Auth interface {
 	Register(email, password string) (string, string, error)
 	Login(email, password string) (string, string, error)
-	Refresh(refreshToken string) (string, string, error)
+	Refresh(refreshToken string) (string, string, string, error)
+	ValidateToken(tokenString string, isAccessToken bool) (string, error)
 }
 
 type Service struct {

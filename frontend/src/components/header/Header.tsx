@@ -1,11 +1,14 @@
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import { LoginButton } from '../ui/buttons/LoginButton';
+import { LogoutButton } from '../ui/buttons/LogoutButton';
 import { PasteButton } from '../ui/buttons/PasteButton';
 import { SignupButton } from '../ui/buttons/SignupButton';
 import img from './../../assets/images/logo.webp';
 
 export const Header: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuth, setIsAuth } = useAuth();
 
   return (
     <div className="h-[50px] border-b border-b-border bg-gray">
@@ -15,12 +18,26 @@ export const Header: React.FC = () => {
             <img className="h-full" src={img} alt="" />
             <span className="uppercase">pastebin</span>
           </a>
-          <PasteButton />
+          <PasteButton onClick={() => navigate('/')} />
         </div>
-        <div className="flex gap-x-2">
-          <LoginButton onClick={() => navigate('/auth/login')} />
-          <SignupButton />
-        </div>
+        {!isAuth && (
+          <div className="flex gap-x-2">
+            <LoginButton onClick={() => navigate('/auth/login')} />
+            <SignupButton onClick={() => navigate('/auth/register')} />
+          </div>
+        )}
+
+        {isAuth && (
+          <div className="flex gap-x-2">
+            <LogoutButton
+              onClick={() => {
+                setIsAuth(false);
+                localStorage.removeItem('token');
+                navigate('/auth/login');
+              }}
+            />
+          </div>
+        )}
       </header>
     </div>
   );

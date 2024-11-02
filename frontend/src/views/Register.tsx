@@ -10,9 +10,9 @@ interface IForm {
   password: string;
 }
 
-export function Login() {
-  const navigate = useNavigate();
+export function Register() {
   const { setIsAuth } = useAuth();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -22,14 +22,14 @@ export function Login() {
   } = useForm<IForm>({ mode: 'onSubmit' });
 
   const { mutate } = useMutation({
-    mutationKey: ['login'],
+    mutationKey: ['register'],
     mutationFn: async (credentials: { email: string; password: string }) => {
-      return authService.login(credentials.email, credentials.password);
+      return authService.register(credentials.email, credentials.password);
     },
     onSuccess: () => {
       setIsAuth(true);
-      reset();
       navigate('/');
+      reset();
     }
   });
 
@@ -38,7 +38,6 @@ export function Login() {
       email: data.email,
       password: data.password
     });
-
     console.log(data);
   };
 
@@ -46,7 +45,7 @@ export function Login() {
     <div className="mx-auto h-screen w-full max-w-[1340px] border border-border bg-gray">
       <div className="mx-2.5 mt-4 flex h-full flex-col items-center pt-2">
         <span className="mb-2 flex w-fit text-xl font-semibold uppercase text-white">
-          login page
+          register page
         </span>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-center">
           <Input
@@ -75,7 +74,7 @@ export function Login() {
           />
           {errors.password && <span className="text-red-500">{errors.password.message}</span>}
           <button type="submit" className="mt-4 h-10 w-40 bg-zinc-700 font-normal text-white">
-            LOGIN
+            REGISTER
           </button>
         </form>
       </div>

@@ -15,11 +15,11 @@ var (
 	jwtAccessSecret  = []byte("access-secret")
 	jwtRefreshSecret = []byte("refresh-secret")
 	accessTokenTTL   = 15 * time.Minute
-	refreshTokenTTL  = 30 * 24 * 60 * 60 * 1000
+	refreshTokenTTL  = time.Duration(30 * 24 * 60 * 60 * 1000)
 )
 
 type tokenClaims struct {
-	jwt.Claims
+	jwt.RegisteredClaims
 	Email string `json:"email"`
 }
 
@@ -101,24 +101,24 @@ func (a *AuthService) Login(email, password string) (string, string, error) {
 	return accessToken, refreshToken, nil
 }
 
-func (a *AuthService) Refresh(refreshToken string) (string, string, error) {
+func (a *AuthService) Refresh(refreshToken string) (string, string, string, error) {
 	ctx := context.Background()
 
-	email, err := validateToken(refreshToken, false)
+	email, err := a.ValidateToken(refreshToken, false)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 
 	accessToken, newRefreshToken, err := generateTokens(email)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 
 	if err := a.tokenRepo.UpdateByToken(ctx, refreshToken, newRefreshToken); err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 
-	return accessToken, newRefreshToken, nil
+	return accessToken, newRefreshToken, email, nil
 }
 
 func generateTokens(email string) (string, string, error) {
@@ -137,7 +137,7 @@ func generateTokens(email string) (string, string, error) {
 
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, tokenClaims{
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(accessTokenTTL)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(refreshTokenTTL))),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 		email,
@@ -151,7 +151,7 @@ func generateTokens(email string) (string, string, error) {
 	return accessTokenString, refreshTokenString, nil
 }
 
-func validateToken(tokenString string, isAccessToken bool) (string, error) {
+func (a *AuthService) ValidateToken(tokenString string, isAccessToken bool) (string, error) {
 	var secret []byte
 
 	if isAccessToken {

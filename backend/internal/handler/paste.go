@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rwx03/Pastebin/backend/internal/models"
-	"github.com/rwx03/Pastebin/backend/pkg/logger"
 	"github.com/rwx03/Pastebin/backend/pkg/utils"
 )
 
@@ -39,7 +38,6 @@ func (h *Handler) newPaste(c *gin.Context) {
 	}
 
 	if _, err := h.services.Paste.Create(paste); err != nil {
-		logger.Log.Printf("Error: %v", err)
 		newErrorResponse(c, http.StatusInternalServerError, "internal error")
 		return
 	}
@@ -47,4 +45,28 @@ func (h *Handler) newPaste(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "ok",
 	})
+}
+
+func (h *Handler) getPaste(c *gin.Context) {
+	pasteID := c.Query("id")
+
+	if pasteID == "" {
+		newErrorResponse(c, http.StatusBadRequest, "missing field id")
+		return
+	}
+
+	paste, err := h.services.Paste.GetPasteByID(pasteID)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, "internal error")
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		gin.H{
+			"id":      paste.PasteID,
+			"title":   paste.Title,
+			"content": paste.Content,
+		},
+	)
 }
